@@ -78,4 +78,36 @@ public class JpaDao {
         em.close();
     }
 
+
+    public void updatePerson(Person new_p) {
+        EntityManager em = null;
+        try {
+            em = factory.createEntityManager();
+            em.getTransaction().begin();
+
+            em.merge(new_p);
+
+            em.getTransaction().commit();
+        } finally {
+            closeEntityManager(em);
+        }
+    }
+
+    public void removePerson(long id) {
+        EntityManager em = null;
+        try {
+            em = factory.createEntityManager();
+            em.getTransaction().begin();
+
+            Person findedPerson = findPerson(id);
+            em.remove(em.contains(findedPerson) ? findedPerson : em.merge(findedPerson));
+
+            em.getTransaction().commit();
+        } finally {
+            closeEntityManager(em);
+        }
+    }
+
+
+
 }

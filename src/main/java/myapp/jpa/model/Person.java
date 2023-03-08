@@ -1,36 +1,34 @@
 package myapp.jpa.model;
 
 import java.util.Date;
-
-import javax.persistence.Basic;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.PostUpdate;
-import javax.persistence.PreUpdate;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
-import javax.persistence.Version;
-
+import javax.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity(name = "Person")
 @Data
 @NoArgsConstructor
+
+@Table(name = "TPerson",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {
+                        "first_name", "birth_day"
+                })
+        })
 public class Person {
 
     @Id()
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-    @Basic(optional = false)
+    @Basic(optional = false, fetch = FetchType.EAGER)
+    @Column(name = "first_name", length = 200)
     private String firstName;
+
 
     @Basic()
     @Temporal(TemporalType.DATE)
+    @Column(name = "birth_day")
     private Date birthDay;
 
     @Version()
@@ -44,6 +42,10 @@ public class Person {
         this.firstName = firstName;
         this.birthDay = birthDay;
     }
+
+    @Basic(optional = true, fetch = FetchType.EAGER)
+    @Column(name = "second_name", length = 100, nullable = true, unique = true)
+    private String secondName;
 
     @PreUpdate
     public void beforeUpdate() {
