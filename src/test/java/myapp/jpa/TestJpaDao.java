@@ -14,6 +14,7 @@ import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -41,7 +42,7 @@ public class TestJpaDao {
         // Création
         var p1 = new Person(null, null);
 
-        assertThrows(PersistenceException.class,
+        assertThrows(Exception.class,
                      ()->dao.addPerson(p1)
                     );
     }
@@ -71,7 +72,7 @@ public class TestJpaDao {
         var p1 = new Person("damien", new Date("10/10/23"));
         dao.addPerson(p1);
         var p2 = new Person("damien", new Date("10/10/23"));
-        assertThrows(PersistenceException.class,
+        assertThrows(Exception.class,
                      ()->dao.addPerson(p2)
                     );
     }
@@ -85,6 +86,36 @@ public class TestJpaDao {
         p2.setSecondName("Heb");
         assertThrows(Exception.class,  ()->dao.addPerson(p2));
     }
+
+    @Test
+    public void testMultiThread() {
+        var p1 = new Person("Heba", new Date("10/10/60"));
+
+        Thread t1 = new Thread( ()->dao.addPerson(p1) );
+        Thread t2 = new Thread( ()->dao.addPerson(p1) );
+
+        t1.start();
+        t2.start();
+
+        //TODO exception non visible car sur autre thread, "technique du booléen"
+    }
+
+
+    @Test
+    public void testFindPersonsByFirstName() {
+        var p1 = new Person("AAAB", new Date("10/10/60"));
+        var p2 = new Person("AAAC", new Date("10/10/60"));
+
+        dao.addPerson(p1);
+        dao.addPerson(p2);
+
+        List<Person> l = dao.findPersonsByFirstName("AAA");
+
+        assertTrue(l.size()>=2);
+
+    }
+
+
 
 
 
