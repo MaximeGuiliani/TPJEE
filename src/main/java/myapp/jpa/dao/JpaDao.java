@@ -58,11 +58,11 @@ public class JpaDao {
         return q.getResultList();
     }
 
-    public List<Person> findPersonsByFirstName(String pattern) {
-        Query query = em.createQuery("SELECT p from Person p where p.firstName like %:pattern% " );
-        query.setParameter("pattern", pattern);
+  /*  public List<Person> findPersonsByFirstName(String pattern) {
+        Query query = em.createQuery("SELECT p from Person p where p.firstName like :patern" );
+        query.setParameter(1 , pattern);
         return query.getResultList();
     }
-
+*/
 
 }

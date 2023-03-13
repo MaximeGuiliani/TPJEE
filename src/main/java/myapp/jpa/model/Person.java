@@ -5,6 +5,10 @@ import javax.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
+
+
+
 @Entity(name = "Person")
 @Data
 @NoArgsConstructor
@@ -15,6 +19,15 @@ import lombok.NoArgsConstructor;
                         "first_name", "birth_day"
                 })
         })
+@NamedQuery(
+        name="findPersonsByFirstName",
+        query="SELECT p from Person p where p.firstName like :patern"
+)
+
+@NamedQuery(
+        name="listPrenom",
+        query="SELECT new myapp.jpa.model.FirstName(p.id,p.firstName) FROM Person p"
+)
 public class Person {
 
     @Id()
@@ -33,6 +46,9 @@ public class Person {
 
     @Version()
     private long version = 0;
+    
+    @Embedded
+    private Address address;
 
     @Transient
     public static long updateCounter = 0;
@@ -57,5 +73,9 @@ public class Person {
         System.err.println("PostUpdate of " + this);
         updateCounter++;
     }
+
+   
+    	
+   
 
 }

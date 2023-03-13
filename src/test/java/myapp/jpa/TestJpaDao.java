@@ -8,8 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import myapp.jpa.dao.JpaDao;
+import myapp.jpa.model.Address;
 import myapp.jpa.model.Person;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 
@@ -100,7 +103,9 @@ public class TestJpaDao {
         //TODO exception non visible car sur autre thread, "technique du booléen"
     }
 
-
+    @PersistenceContext
+    EntityManager em;
+    
     @Test
     public void testFindPersonsByFirstName() {
         var p1 = new Person("AAAB", new Date("10/10/60"));
@@ -108,14 +113,32 @@ public class TestJpaDao {
 
         dao.addPerson(p1);
         dao.addPerson(p2);
+        
+        List<Person> l = em.createNamedQuery("findPersonsByFirstName")
+                .setParameter("patern", "AAA%")
+                .getResultList();
 
-        List<Person> l = dao.findPersonsByFirstName("AAA");
 
-        assertTrue(l.size()>=2);
-
+        assertTrue(l.size()==2);
     }
 
 
+    @Test
+    public void testFindAllPerson() {
+    	
+        List<Person> l = em.createNamedQuery("listPrenom").getResultList();    
+        
+        assertTrue(l.size() >0 );
+    }
+    
+    @Test
+    public void testAdress() {
+    	Person p1 = new Person("Maxi", new Date("11/11/11"));
+    	
+    	p1.setAddress(new Address("street", "city", "country"));
+    	
+    	dao.addPerson(p1);
+    }
 
 
 
