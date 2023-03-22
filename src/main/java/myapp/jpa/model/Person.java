@@ -1,12 +1,12 @@
 package myapp.jpa.model;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import javax.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-
-
+import lombok.ToString;
 
 
 @Entity(name = "Person")
@@ -28,6 +28,7 @@ import lombok.NoArgsConstructor;
         name="listPrenom",
         query="SELECT new myapp.jpa.model.FirstName(p.id,p.firstName) FROM Person p"
 )
+
 public class Person {
 
     @Id()
@@ -63,6 +64,53 @@ public class Person {
     @Column(name = "second_name", length = 100, nullable = true, unique = true)
     private String secondName;
 
+
+
+
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            targetEntity= Car.class,
+            mappedBy = "owner",
+            cascade = { CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE }
+    )
+
+    @ToString.Exclude// pour éviter les boucles
+    @OrderBy("immatriculation ASC")
+    private Set<Car> cars;
+
+
+    public void addCar(Car c) {
+        if (cars == null) {
+            cars = new HashSet<>();
+        }
+        cars.add(c);
+        c.setOwner(this);
+    }
+
+
+    //---------------------MOVIES-------------------------------
+
+    @ManyToMany(cascade = { CascadeType.MERGE, CascadeType.PERSIST })
+    // @JoinTable est optionnelle (afin de préciser les tables)
+    @JoinTable(
+            name = "Person_Movie",
+            joinColumns = { @JoinColumn(name = "id_person") },
+            inverseJoinColumns = { @JoinColumn(name = "id_movie") }
+    )
+    @ToString.Exclude
+    Set<Movie> movies;
+
+    public void addMovie(Movie movie) {
+        if (movies == null) {
+            movies = new HashSet<>();
+        }
+        movies.add(movie);
+    }
+
+
+
+    //-----------------------------------------------------------------
+
     @PreUpdate
     public void beforeUpdate() {
         System.err.println("PreUpdate of " + this);
@@ -74,8 +122,5 @@ public class Person {
         updateCounter++;
     }
 
-   
-    	
-   
 
 }

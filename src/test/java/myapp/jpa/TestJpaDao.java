@@ -1,5 +1,6 @@
 package myapp.jpa;
 
+import myapp.jpa.model.Car;
 import org.hibernate.PropertyValueException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hsqldb.HsqlException;
@@ -18,6 +19,7 @@ import javax.persistence.RollbackException;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,6 +29,17 @@ public class TestJpaDao {
     @Autowired
     JpaDao dao;
 
+    @PersistenceContext
+    EntityManager em;
+
+
+   /* @Test
+    public void testUpdatePerson() {
+        var p1 = new Person("damien", null);
+        dao.addPerson(p1);
+        p1.setFirstName("maxime");
+
+        dao.updatePerson(p1);
     @Test
     public void addAndFindPerson() {
         // Création
@@ -49,14 +62,6 @@ public class TestJpaDao {
                      ()->dao.addPerson(p1)
                     );
     }
-
-    @Test
-    public void testUpdatePerson() {
-        var p1 = new Person("damien", null);
-        dao.addPerson(p1);
-        p1.setFirstName("maxime");
-
-        dao.updatePerson(p1);
 
         Person p2 = dao.findPerson(p1.getId());
         assertEquals("maxime", p2.getFirstName());
@@ -103,9 +108,8 @@ public class TestJpaDao {
         //TODO exception non visible car sur autre thread, "technique du booléen"
     }
 
-    @PersistenceContext
-    EntityManager em;
-    
+
+
     @Test
     public void testFindPersonsByFirstName() {
         var p1 = new Person("AAAB", new Date("10/10/60"));
@@ -113,7 +117,7 @@ public class TestJpaDao {
 
         dao.addPerson(p1);
         dao.addPerson(p2);
-        
+
         List<Person> l = em.createNamedQuery("findPersonsByFirstName")
                 .setParameter("patern", "AAA%")
                 .getResultList();
@@ -125,20 +129,124 @@ public class TestJpaDao {
 
     @Test
     public void testFindAllPerson() {
-    	
-        List<Person> l = em.createNamedQuery("listPrenom").getResultList();    
-        
+
+        List<Person> l = em.createNamedQuery("listPrenom").getResultList();
+
         assertTrue(l.size() >0 );
     }
-    
+
     @Test
     public void testAdress() {
     	Person p1 = new Person("Maxi", new Date("11/11/11"));
-    	
+
     	p1.setAddress(new Address("street", "city", "country"));
-    	
+
     	dao.addPerson(p1);
     }
+
+    @Test
+    public void testAddCarWithOwner() {
+        Person p1 = new Person("Hugo", new Date("11/11/11"));
+        dao.add(p1);
+        Car car = new Car("A1A","alfa-romeo 4C");
+        car.setOwner(p1);
+        dao.add(car);
+    }
+
+*/
+    @Test
+    public void testAddCarFromOwner() {
+        //new owner
+        Car car = new Car("A1A","bmw m3");
+        Person p1 = new Person("Charles", new Date("12/12/12"));
+        p1.addCar(car);
+        dao.add(p1);
+
+        //update owner
+        Car car2 = new Car("A1ABD","alfa-romeo 8C");
+        Person p2 = dao.findPerson(p1.getId());
+        assertTrue(p2.getFirstName().equals("Charles"));
+        p2.addCar(car2);
+        dao.update(p2);
+
+
+        //print all persons
+        List<Person> list_all = em.createQuery("SELECT DISTINCT p FROM Person p JOIN FETCH p.cars").getResultList();
+        System.out.println(">>>>>>"+list_all.size());
+        for (Person p: list_all) {
+            System.out.println(">>>>>>"+p);
+            Set<Car> list_Cars = p.getCars();
+            for (Car c: list_Cars) {
+                System.out.println("<<<<<"+c);
+            }
+        }
+
+        assertTrue(dao.findPerson(p1.getId()).getCars().size()==2);
+    }
+
+
+    @Test
+    public void testFindPersonsByCarModel() {
+        //new owner
+        Car car = new Car("ABCD","the bmw m3 bleu");
+        Person p1 = new Person("Hamilton", new Date("12/12/12"));
+        p1.addCar(car);
+        dao.addPerson(p1);
+
+
+        List<Person> l = em.createNamedQuery("findPersonsByCarModel")
+                .setParameter("pattern", "%bmw%")
+                .getResultList();
+
+        //print all persons
+        List<Person> list_all = em.createQuery("SELECT DISTINCT p FROM Person p JOIN FETCH p.cars").getResultList();
+        System.out.println(">>>>>>"+list_all.size());
+        for (Person p: list_all) {
+            System.out.println(">>>>>>"+p);
+            Set<Car> list_Cars = p.getCars();
+            for (Car c: list_Cars) {
+                System.out.println("<<<<<"+c);
+            }
+        }
+
+        assertTrue(l.size()>=1);
+    }
+
+
+
+    @Test
+    public void testOrderCars() {
+        //new owner with 2 cars
+        Car car = new Car("BBBBB","the bmw m3 bleu");
+        Person p1 = new Person("Russel", new Date("12/12/12"));
+        p1.addCar(car);
+        dao.addPerson(p1);
+
+        Car car2 = new Car("AAAAA","the bmw m3 bleu");
+        p1.addCar(car2);
+        dao.update(p1);
+
+
+        List<Person> l = em.createNamedQuery("findPersonsByCarModel")
+                .setParameter("pattern", "%bmw%")
+                .getResultList();
+
+
+        //print all persons
+        List<Person> list_all = em.createQuery("SELECT DISTINCT p FROM Person p JOIN FETCH p.cars").getResultList();
+        System.out.println(">>>>>>"+list_all.size());
+        for (Person p: list_all) {
+            System.out.println(">>>>>>"+p);
+            Set<Car> list_Cars = p.getCars();
+            for (Car c: list_Cars) {
+                System.out.println("<<<<<"+c);
+            }
+        }
+
+    }
+
+
+
 
 
 
