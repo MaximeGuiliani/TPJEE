@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import myapp.jpa.dao.JpaDao;
 import myapp.jpa.model.Address;
 import myapp.jpa.model.Person;
+import org.springframework.test.annotation.Rollback;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -215,6 +216,7 @@ public class TestJpaDao {
 
 
     @Test
+    @Rollback(value = false)
     public void testOrderCars() {
         //new owner with 2 cars
         Car car = new Car("BBBBB","the bmw m3 bleu");
